@@ -9,6 +9,8 @@ import pandas as pd
 from pathlib import Path
 from datetime import datetime
 from together import Together
+from groq import Groq
+
 
 # --------------------------------------------------
 # CONFIGURATION
@@ -30,8 +32,10 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 OUTPUT_FILE = OUTPUT_DIR / f"Google_Review_AI_Analysis_{timestamp}.xlsx"
 
-api_key = os.getenv("TOGETHER_API_KEY", "605aa6c5baf53f6dab760f2dcc022ada792883aceaeeb90d43071573e1e6d2b9")
-client = Together(api_key=api_key)
+# api_key = os.getenv("TOGETHER_API_KEY")
+# client = Together(api_key=api_key)
+apikey = os.getenv("GROQ_API_KEY")
+client = Groq(api_key=apikey)
 
 # --------------------------------------------------
 # LOAD DATA
@@ -111,14 +115,23 @@ Format:
 
     for attempt in range(MAX_RETRIES):
         try:
+            # response = client.chat.completions.create(
+            #     model=MODEL,
+            #     messages=[{"role": "user", "content": prompt}],
+            #     temperature=0.2,
+            #     max_tokens=3000
+            # )
             response = client.chat.completions.create(
-                model=MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.2,
-                max_tokens=3000
-            )
+                        model="llama-3.3-70b-versatile",
+                        messages=[
+                        {"role": "user", "content": prompt}
+                        ],
+                        temperature=0.2
+                        )
+
 
             raw_output = response.choices[0].message.content.strip()
+            print(raw_output)
             json_text = extract_json_array(raw_output)
 
             if not json_text:
